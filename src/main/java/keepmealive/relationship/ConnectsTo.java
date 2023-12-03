@@ -11,12 +11,20 @@ public class ConnectsTo {
 	private Long id;
 
 	@StartNode
-	private Neuron neuron1;
+	private Neuron incomingNeuron;
 
 	@EndNode
-	private Neuron neuron2;
+	private Neuron outgoingNeuron;
 
 	@Property
-	private int weight;
+	private double weight;
+
+	public Neuron getIncomingNeuron() {
+		return incomingNeuron;
+	}
+
+	public double getWeight() {
+		return weight;
+	}
 
 }
