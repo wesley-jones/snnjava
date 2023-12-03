@@ -35,7 +35,7 @@ public class SnnWebSocket {
 
 	public static void broadcast(String data) {
 		for (Session session : sessions) {
-			Future<Void> future = session.getAsyncRemote().sendText(data);
+			session.getAsyncRemote().sendText(data);
 //			try {
 //				session.getBasicRemote().sendText(data);
 //			} catch (IOException e) {
