@@ -6,7 +6,9 @@ import org.neo4j.ogm.config.Configuration;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
 
+import keepmealive.node.Goal;
 import keepmealive.node.Neuron;
+import keepmealive.node.Stomach;
 
 public class GraphLoader {
 
@@ -16,9 +18,8 @@ public class GraphLoader {
 		System.out.println("Loading Neo4j config");
 		Configuration configuration = new Configuration.Builder().uri("bolt://localhost:7687") // Neo4j URI
 				.credentials("neo4j", getPassword()) // Neo4j credentials
-				.withBasePackages("keepmealive.node", "keepmealive.relationship")
-				.build();
-		
+				.withBasePackages("keepmealive.node", "keepmealive.relationship").build();
+
 		System.out.println("Starting Neo4j SessionFactory");
 
 		SessionFactory sessionFactory = new SessionFactory(configuration);
@@ -38,5 +39,15 @@ public class GraphLoader {
 	public Collection<Neuron> loadNeurons() {
 		System.out.println("Querying for all Neurons");
 		return session.loadAll(Neuron.class);
+	}
+
+	public Collection<Stomach> loadStomach() {
+		System.out.println("Querying for all Neurons");
+		return session.loadAll(Stomach.class);
+	}
+
+	public Collection<Goal> loadGoals() {
+		System.out.println("Querying for all Neurons");
+		return session.loadAll(Goal.class);
 	}
 }

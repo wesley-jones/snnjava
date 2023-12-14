@@ -15,4 +15,16 @@ public class LimitedStack extends LinkedList<Long> {
 			removeLast();
 		}
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for (Long superstep : this) {
+			sb.append(superstep).append(",");
+		}
+		if (sb.length() > 0) {
+			sb.deleteCharAt(sb.length() - 1); // Remove the trailing comma
+		}
+		return sb.toString();
+	}
 }

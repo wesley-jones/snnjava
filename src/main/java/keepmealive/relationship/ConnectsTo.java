@@ -1,8 +1,12 @@
 package keepmealive.relationship;
 
-import org.neo4j.ogm.annotation.*;
+import org.neo4j.ogm.annotation.EndNode;
+import org.neo4j.ogm.annotation.Id;
+import org.neo4j.ogm.annotation.Property;
+import org.neo4j.ogm.annotation.RelationshipEntity;
+import org.neo4j.ogm.annotation.StartNode;
 
-import keepmealive.node.Neuron;
+import keepmealive.Node;
 
 @RelationshipEntity(type = "CONNECTS_TO")
 public class ConnectsTo {
@@ -11,16 +15,16 @@ public class ConnectsTo {
 	private Long id;
 
 	@StartNode
-	private Neuron incomingNeuron;
+	private Node incomingNode;
 
 	@EndNode
-	private Neuron outgoingNeuron;
+	private Node outgoingNode;
 
 	@Property
 	private double weight;
 
-	public Neuron getIncomingNeuron() {
-		return incomingNeuron;
+	public Node getIncomingNode() {
+		return incomingNode;
 	}
 
 	public double getWeight() {

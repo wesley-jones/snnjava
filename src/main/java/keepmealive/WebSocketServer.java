@@ -1,10 +1,11 @@
 package keepmealive;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.glassfish.tyrus.server.Server;
-
-import keepmealive.node.Neuron;
 
 public class WebSocketServer {
 
@@ -20,15 +21,18 @@ public class WebSocketServer {
 			// TODO: Consider compacting the graph data into a linked list or edge list to
 			// reduce memory footprint
 			GraphLoader graphLoader = new GraphLoader();
-			Collection<Neuron> neurons = graphLoader.loadNeurons();
-			if (neurons.isEmpty()) {
-				System.out.println("No neurons found");
+			Collection<Node> nodes = new ArrayList<>(graphLoader.loadNeurons());
+//			nodes.addAll(graphLoader.loadStomach());
+			nodes.addAll(graphLoader.loadGoals());
+
+			if (nodes.isEmpty()) {
+				System.out.println("No nodes found");
 			} else {
-				System.out.println(neurons.size() + " neurons found");
+				System.out.println(nodes.size() + " nodes found");
 			}
 
 			// Simulation of time loop aka Superstep
-			int numberOfSupersteps = 100000;
+			int numberOfSupersteps = 4;
 
 			long startTime = System.currentTimeMillis();
 
@@ -37,7 +41,19 @@ public class WebSocketServer {
 //				long superstepStartTime = System.currentTimeMillis();
 
 				final int currentRun = run;
-				neurons.parallelStream().forEach(neuron -> neuron.compute(currentRun));
+//				nodes.parallelStream().forEach(neuron -> neuron.compute(currentRun));
+
+				// Use parallelStream to process Computables concurrently
+				Map<String, String> resultCollector = nodes.parallelStream()
+						.map(computable -> computable.compute(currentRun)).filter(result -> !result.isEmpty()) // Filter
+																												// out
+																												// results
+																												// from
+																												// Neurons
+						.flatMap(map -> map.entrySet().stream())
+						.collect(Collectors.toConcurrentMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> v1));
+
+				System.out.println("resultCollector: " + resultCollector);
 
 				// Simulate SNN and get data
 				double x = Math.random() * 400; // Example data (replace with your SNN logic)
