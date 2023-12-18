@@ -45,11 +45,7 @@ public class WebSocketServer {
 
 				// Use parallelStream to process Computables concurrently
 				Map<String, String> resultCollector = nodes.parallelStream()
-						.map(computable -> computable.compute(currentRun)).filter(result -> !result.isEmpty()) // Filter
-																												// out
-																												// results
-																												// from
-																												// Neurons
+						.map(computable -> computable.compute(currentRun)).filter(result -> !result.isEmpty())
 						.flatMap(map -> map.entrySet().stream())
 						.collect(Collectors.toConcurrentMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> v1));
 

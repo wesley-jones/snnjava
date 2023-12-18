@@ -18,11 +18,11 @@ public abstract class Node implements Computable {
 	@Relationship(type = "ConnectsTo", direction = Relationship.Direction.INCOMING)
 	private List<ConnectsTo> upstreamRelationships = new ArrayList<ConnectsTo>();
 
-	protected LimitedStack firedSupersteps = new LimitedStack();
+	protected LimitedStack<Long> firedSupersteps = new LimitedStack<Long>();
 
 	public static final int FIRING_THRESHOLD = 1;
 
-	private LimitedStack getFiredSupersteps() {
+	private LimitedStack<Long> getFiredSupersteps() {
 		return firedSupersteps;
 	}
 
@@ -34,10 +34,9 @@ public abstract class Node implements Computable {
 	public Map<String, String> compute(long timestep) {
 		double weightedSum = getFiredUpstreamNeuronWeights(timestep);
 		if (weightedSum >= FIRING_THRESHOLD) {
-			firedSupersteps.pushNumber(timestep);
+			firedSupersteps.pushItem(timestep);
 		}
 		Map<String, String> result = new ConcurrentHashMap<>();
-		result.put("firedSupersteps_" + id, firedSupersteps.toString());
 
 		return result;
 	}
