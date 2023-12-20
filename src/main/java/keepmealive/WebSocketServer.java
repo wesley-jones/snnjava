@@ -18,11 +18,9 @@ public class WebSocketServer {
 			System.out.println("WebSocket server started. Press Ctrl+C to stop.");
 
 			// Load the environment objects
-			// TODO: Consider compacting the graph data into a linked list or edge list to
-			// reduce memory footprint
 			GraphLoader graphLoader = new GraphLoader();
 			Collection<Node> nodes = new ArrayList<>(graphLoader.loadNeurons());
-//			nodes.addAll(graphLoader.loadStomach());
+			nodes.addAll(graphLoader.loadStomach());
 			nodes.addAll(graphLoader.loadGoals());
 
 			if (nodes.isEmpty()) {
@@ -32,7 +30,7 @@ public class WebSocketServer {
 			}
 
 			// Simulation of time loop aka Superstep
-			int numberOfSupersteps = 4;
+			int numberOfSupersteps = 4000000;
 
 			long startTime = System.currentTimeMillis();
 
@@ -51,15 +49,19 @@ public class WebSocketServer {
 
 				System.out.println("resultCollector: " + resultCollector);
 
+				// Convert Map to JSON-like string
+				String jsonLikeString = Utilities.convertMapToJson(resultCollector);
+
 				// Simulate SNN and get data
-				double x = Math.random() * 400; // Example data (replace with your SNN logic)
-				double y = Math.random() * 400;
+//				double x = Math.random() * 400; // Example data (replace with your SNN logic)
+//				double y = Math.random() * 400;
 
 				// Broadcast data to connected clients
-				SnnWebSocket.broadcast("{\"x\":" + x + ", \"y\":" + y + "}");
+//				SnnWebSocket.broadcast("{\"x\":" + x + ", \"y\":" + y + "}");
+				SnnWebSocket.broadcast(jsonLikeString);
 
 				// Delay for a short time (adjust as needed)
-//				Thread.sleep(1000);
+//				Thread.sleep(1);
 
 //				long superstepEndTime = System.currentTimeMillis();
 //				long superstepElapsedTime = superstepEndTime - superstepStartTime;

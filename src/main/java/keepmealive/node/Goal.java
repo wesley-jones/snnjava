@@ -19,7 +19,7 @@ public class Goal extends Node {
 			firedSupersteps.pushItem(timestep);
 			result.put("Eating Status", "Eating");
 		} else {
-			result.put("Eating Status", "Not Eating");
+//			result.put("Eating Status", "Not Eating");
 		}
 
 		return result;

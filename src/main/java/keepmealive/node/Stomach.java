@@ -34,44 +34,57 @@ public class Stomach extends Node {
 
 		switch (type) {
 		case TYPE_OUTPUT_1:
-			// Logic for TYPE_OUTPUT_1
-			result.put("output_1_result", "Result for output_1");
+			if (getCurrentValue(timestep) < 50) {
+				firedSupersteps.pushItem(timestep);
+			}
 			break;
 		case TYPE_OUTPUT_2:
-			// Logic for TYPE_OUTPUT_2
-			result.put("output_2_result", "Result for output_2");
+			if (getCurrentValue(timestep) < 40) {
+				firedSupersteps.pushItem(timestep);
+			}
 			break;
 
 		case TYPE_OUTPUT_3:
-			// Logic for TYPE_OUTPUT_2
-			result.put("output_2_result", "Result for output_2");
+			if (getCurrentValue(timestep) < 30) {
+				firedSupersteps.pushItem(timestep);
+			}
 			break;
 
 		case TYPE_OUTPUT_4:
-			// Logic for TYPE_OUTPUT_2
-			result.put("output_2_result", "Result for output_2");
+			if (getCurrentValue(timestep) < 20) {
+				firedSupersteps.pushItem(timestep);
+			}
 			break;
 
 		case TYPE_INPUT_1:
 
+			if (firedSupersteps.isEmpty()) {
+				firedSupersteps.pushItem(timestep);
+				int full = 100;
+				percentageFull.pushItem(new TimestepValuePair<Integer>(timestep, full));
+				result.put("Stomach Full", String.valueOf(full));
+			}
+			System.out.println("fullness: " + getLatestValue());
+
 			// Fire every second so that updates only happen once per second
-			if (Utilities.hasPassedRefractoryPeriod(timestep, firedSupersteps.isEmpty() ? 0 : firedSupersteps.getLast(),
-					REFRACTORY_PERIOD)) {
+			if (Utilities.hasPassedRefractoryPeriod(timestep,
+					firedSupersteps.isEmpty() ? 0 : firedSupersteps.getFirst(), REFRACTORY_PERIOD)) {
 				firedSupersteps.pushItem(timestep);
 
 				double weightedSum = super.getFiredUpstreamNeuronWeights(timestep);
 
 				if (weightedSum >= FIRING_THRESHOLD) {
 					// Add food
-					int value = percentageFull.getLast().getValue();
-					percentageFull.pushItem(new TimestepValuePair<Integer>(timestep, value + 1));
+					int newValue = getLatestValue() + 4;
+					percentageFull.pushItem(new TimestepValuePair<Integer>(timestep, newValue));
 
-					result.put("Stomach Full", "Eating");
+					result.put("Stomach Full", String.valueOf(newValue));
 				}
 
 				else {
 					// Reduce food
-					percentageFull.pushItem(new TimestepValuePair<Integer>(timestep, 10));
+					int newValue = getLatestValue() - 1;
+					percentageFull.pushItem(new TimestepValuePair<Integer>(timestep, newValue));
 
 					result.put("Stomach Full", "Eating");
 				}
@@ -87,28 +100,27 @@ public class Stomach extends Node {
 
 		return result;
 
-		/*
-		 * The stomach sends signals to its connected neurons. The stomach increases
-		 * signals as it gets depleted. At 50% one node starts signaling. At 40% two
-		 * nodes start signaling. At 30% three nodes start signaling. At 20% four nodes
-		 * start signaling.
-		 * 
-		 * Incoming food increases the percentage full.
-		 */
+	}
 
-//		List<ConnectsTo> upstreamRelationships = getUpstreamRelationships();
+	private static int getCurrentValue(long timestep) {
+		int currentValue = 0;
+		long maxSuperstep = Long.MIN_VALUE;
 
-//		for (ConnectsTo relationship : upstreamRelationships) {
-//			Node upstreamNode = relationship.getIncomingNode();
-//			if (upstreamNode.getClass() == Goal.class) {
-//				
-//			}
-//			if (upstreamNode.getFiredSupersteps().contains(timestep - 1)) {
-//				
-//			}
-//		}
+		// Iterate over the percentageFull stack to find the most recent value based on
+		// timestep
+		for (TimestepValuePair<Integer> pair : percentageFull) {
+			long superstep = pair.getSuperstep();
 
-//		return null;
+			if (superstep <= timestep && superstep > maxSuperstep) {
+				maxSuperstep = superstep;
+				currentValue = pair.getValue();
+			}
+		}
 
+		return currentValue;
+	}
+
+	private int getLatestValue() {
+		return percentageFull.getFirst().getValue();
 	}
 }
