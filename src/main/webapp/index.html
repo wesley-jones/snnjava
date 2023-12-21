@@ -1,18 +1,18 @@
-<!doctype html> 
-<html lang="en"> 
-<head> 
-    <meta charset="UTF-8" />
-    <title>Making your first Phaser 3 Game - Part 10</title>
-    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
-    <style type="text/css">
-        body {
-            margin: 0;
-        }
-    </style>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Making your first Phaser 3 Game - Part 10</title>
+<script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+<style type="text/css">
+body {
+	margin: 0;
+}
+</style>
 </head>
 <body>
 
-<script type="text/javascript">
+	<script type="text/javascript">
 
 var config = {
     type: Phaser.AUTO,
@@ -41,6 +41,7 @@ var score = 0;
 var gameOver = false;
 var scoreText;
 var energyText;
+var goalText;
 
 var game = new Phaser.Game(config);
 
@@ -118,10 +119,10 @@ function create ()
     bombs = this.physics.add.group();
 
     //  The score
-    scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+    goalText = this.add.text(16, 16, 'Goal: --', { fontSize: '32px', fill: '#000' });
     
     // Energy
-    energyText = this.add.text(16, 46, 'energy: 0', { fontSize: '32px', fill: '#000' });
+    energyText = this.add.text(16, 46, 'Stomach Fullness: 100', { fontSize: '32px', fill: '#000' });
 
     //  Collide the player and the stars with the platforms
     this.physics.add.collider(player, platforms);
@@ -205,27 +206,52 @@ function hitBomb (player, bomb)
     gameOver = true;
 }
 
-//WebSocket setup
-const socket = new WebSocket('ws://localhost:8025/websocket/snn');
+function createWebSocket() {
+	//WebSocket setup
+	const socket = new WebSocket('ws://localhost:8025/websocket/snn');
 
-socket.onopen = (event) => {
-  console.log('WebSocket connection opened:', event);
-};
+	socket.onopen = (event) => {
+	  console.log('WebSocket connection opened:', event);
+	};
 
-socket.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  console.log('Received SNN data:', data);
-  // Update fly position based on received data
-  energyText.setText('energy: ' + data.y);
-};
+	socket.onmessage = (event) => {
+	  const data = JSON.parse(event.data);
+	  console.log('Received SNN data:', data);
+	  // Update fly position based on received data
+	  
+	  if ('Stomach Full' in data) {
+		  console.log('stomach data received');
+		  energyText.setText('Stomach Fullness: ' + data['Stomach Full']);
+	  }
+	  if ('Goal' in data) {
+		  console.log('Goal data received');
+		  goalText.setText('Goal: ' + data['Goal']);
+	  }
+	};
 
-socket.onclose = (event) => {
-  console.log('WebSocket connection closed:', event);
-};
+	socket.onclose = (event) => {
+	  console.log('WebSocket connection closed:', event);
+	};
 
-socket.onerror = (error) => {
-  console.error('WebSocket error:', error);
-};
+	socket.onerror = (error) => {
+	  console.error('WebSocket error:', error);
+	};
+	
+	return socket;
+}
+
+//Initial WebSocket setup
+let socket = createWebSocket();
+
+// Continuously check for an open connection
+setInterval(() => {
+  if (socket.readyState !== WebSocket.OPEN) {
+    console.log('WebSocket connection is closed. Attempting to reconnect...');
+    socket = createWebSocket();
+  }
+}, 5000); // Adjust the interval as needed (e.g., check every 15 seconds)
+
+
 
 </script>
 

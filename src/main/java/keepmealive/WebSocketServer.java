@@ -30,7 +30,7 @@ public class WebSocketServer {
 			}
 
 			// Simulation of time loop aka Superstep
-			int numberOfSupersteps = 4000000;
+			int numberOfSupersteps = (int) (Constants.ONE_SECOND * 23);
 
 			long startTime = System.currentTimeMillis();
 
@@ -47,18 +47,22 @@ public class WebSocketServer {
 						.flatMap(map -> map.entrySet().stream())
 						.collect(Collectors.toConcurrentMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> v1));
 
-				System.out.println("resultCollector: " + resultCollector);
+//				System.out.println("resultCollector: " + resultCollector);
 
-				// Convert Map to JSON-like string
-				String jsonLikeString = Utilities.convertMapToJson(resultCollector);
+				if (!resultCollector.isEmpty()) {
 
-				// Simulate SNN and get data
+					// Convert Map to JSON-like string
+					String jsonLikeString = Utilities.convertMapToJson(resultCollector);
+					System.out.println(jsonLikeString);
+
+					// Simulate SNN and get data
 //				double x = Math.random() * 400; // Example data (replace with your SNN logic)
 //				double y = Math.random() * 400;
 
-				// Broadcast data to connected clients
+					// Broadcast data to connected clients
 //				SnnWebSocket.broadcast("{\"x\":" + x + ", \"y\":" + y + "}");
-				SnnWebSocket.broadcast(jsonLikeString);
+					SnnWebSocket.broadcast(jsonLikeString);
+				}
 
 				// Delay for a short time (adjust as needed)
 //				Thread.sleep(1);
