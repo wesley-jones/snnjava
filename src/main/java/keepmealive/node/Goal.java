@@ -1,7 +1,7 @@
 package keepmealive.node;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.neo4j.ogm.annotation.NodeEntity;
 
@@ -20,7 +20,7 @@ public class Goal extends Node {
 	@Override
 	public Map<String, String> compute(long timestep) {
 
-		Map<String, String> result = new ConcurrentHashMap<>();
+		Map<String, String> result = new HashMap<>();
 		if (timestep == 0) {
 			result.put("Goal", goal);
 		}

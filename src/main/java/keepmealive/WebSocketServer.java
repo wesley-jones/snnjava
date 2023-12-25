@@ -30,53 +30,33 @@ public class WebSocketServer {
 			}
 
 			// Simulation of time loop aka Superstep
-			int numberOfSupersteps = (int) (Constants.ONE_SECOND * 23);
-
+			int numberOfSupersteps = (int) (Constants.ONE_SECOND * 60);
 			long startTime = System.currentTimeMillis();
-
-//			while (true) {
 			for (int run = 0; run < numberOfSupersteps; run++) {
-//				long superstepStartTime = System.currentTimeMillis();
-
 				final int currentRun = run;
-//				nodes.parallelStream().forEach(neuron -> neuron.compute(currentRun));
 
 				// Use parallelStream to process Computables concurrently
+				// Manage threads outside of loop if you need this to be faster.
 				Map<String, String> resultCollector = nodes.parallelStream()
 						.map(computable -> computable.compute(currentRun)).filter(result -> !result.isEmpty())
 						.flatMap(map -> map.entrySet().stream())
 						.collect(Collectors.toConcurrentMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> v1));
 
-//				System.out.println("resultCollector: " + resultCollector);
-
 				if (!resultCollector.isEmpty()) {
-
 					// Convert Map to JSON-like string
 					String jsonLikeString = Utilities.convertMapToJson(resultCollector);
 					System.out.println(jsonLikeString);
 
-					// Simulate SNN and get data
-//				double x = Math.random() * 400; // Example data (replace with your SNN logic)
-//				double y = Math.random() * 400;
-
-					// Broadcast data to connected clients
-//				SnnWebSocket.broadcast("{\"x\":" + x + ", \"y\":" + y + "}");
 					SnnWebSocket.broadcast(jsonLikeString);
 				}
-
-				// Delay for a short time (adjust as needed)
-//				Thread.sleep(1);
-
-//				long superstepEndTime = System.currentTimeMillis();
-//				long superstepElapsedTime = superstepEndTime - superstepStartTime;
-
-//				System.out.println("Run " + (run + 1) + " in " + superstepElapsedTime + " milliseconds");
-
+				SnnWebSocket.resetProcessedMessageFlag();
 			}
 			long endTime = System.currentTimeMillis();
 			long elapsedTime = endTime - startTime;
 			double averageIterations = (double) elapsedTime / numberOfSupersteps;
 			System.out.println("Average superstep: " + averageIterations + " milliseconds");
+			System.out.println("Total Incoming Messages: " + SnnWebSocket.totalIncomingMessageCounter);
+			System.out.println("Processed Incoming Messages: " + SnnWebSocket.processedIncomingMessageCounter);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

@@ -1,9 +1,11 @@
 package keepmealive;
 
-import java.io.IOException;
+import java.io.StringReader;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Future;
 
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 import jakarta.websocket.CloseReason;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnMessage;
@@ -15,6 +17,9 @@ import jakarta.websocket.server.ServerEndpoint;
 public class SnnWebSocket {
 
 	private static final CopyOnWriteArrayList<Session> sessions = new CopyOnWriteArrayList<>();
+	private static volatile boolean processedMessageInSuperstep = false;
+	public static int processedIncomingMessageCounter = 0;
+	public static int totalIncomingMessageCounter = 0;
 
 	@OnOpen
 	public void onOpen(Session session) {
@@ -30,17 +35,49 @@ public class SnnWebSocket {
 
 	@OnMessage
 	public void onMessage(String message, Session session) {
-		// Handle incoming messages if needed
+		totalIncomingMessageCounter++;
+		if (!processedMessageInSuperstep) {
+			processedIncomingMessageCounter++;
+			// Store the message only if it hasn't been processed in the current superstep
+			processMessage(message);
+
+			// Set the flag to indicate that a message has been processed in this superstep
+			processedMessageInSuperstep = true;
+		}
 	}
 
 	public static void broadcast(String data) {
 		for (Session session : sessions) {
 			session.getAsyncRemote().sendText(data);
-//			try {
-//				session.getBasicRemote().sendText(data);
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
 		}
+	}
+
+	// Reset the flag for the next superstep
+	public static void resetProcessedMessageFlag() {
+		processedMessageInSuperstep = false;
+	}
+
+	public static void processMessage(String message) {
+		// Check if storedMessage is not an empty string
+		if (!message.isEmpty()) {
+
+			try {
+				// Parse JSON message
+				JsonObject jsonObject;
+				try (JsonReader jsonReader = Json.createReader(new StringReader(message))) {
+					jsonObject = jsonReader.readObject();
+				}
+
+				// Access the values in the JsonObject
+				if (jsonObject.containsKey("Stomach Full")) {
+					String stomachFullValue = jsonObject.getString("Stomach Full");
+					System.out.println("Stomach Full value: " + stomachFullValue);
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
 	}
 }

@@ -1,7 +1,7 @@
 package keepmealive.node;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 
 import org.neo4j.ogm.annotation.NodeEntity;
@@ -31,7 +31,7 @@ public class Stomach extends Node {
 
 	public Map<String, String> compute(long timestep) {
 
-		Map<String, String> result = new ConcurrentHashMap<>();
+		Map<String, String> result = new HashMap<>();
 
 		switch (type) {
 		case TYPE_OUTPUT_1:
