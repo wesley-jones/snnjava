@@ -6,10 +6,6 @@ import org.neo4j.ogm.config.Configuration;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
 
-import keepmealive.node.Goal;
-import keepmealive.node.Neuron;
-import keepmealive.node.Stomach;
-
 public class GraphLoader {
 
 	private final Session session;
@@ -36,18 +32,9 @@ public class GraphLoader {
 		return neo4jPassword;
 	}
 
-	public Collection<Neuron> loadNeurons() {
-		System.out.println("Querying for all Neurons");
-		return session.loadAll(Neuron.class);
-	}
-
-	public Collection<Stomach> loadStomach() {
-		System.out.println("Querying for all Neurons");
-		return session.loadAll(Stomach.class);
-	}
-
-	public Collection<Goal> loadGoals() {
-		System.out.println("Querying for all Neurons");
-		return session.loadAll(Goal.class);
+	// Generic method to load nodes of any type
+	public <T extends Node> Collection<T> loadNodes(Class<T> nodeClass) {
+		System.out.println("Querying for all " + nodeClass.getSimpleName() + " nodes");
+		return session.loadAll(nodeClass);
 	}
 }

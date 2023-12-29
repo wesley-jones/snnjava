@@ -1,6 +1,5 @@
 package keepmealive;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,10 +17,8 @@ public class WebSocketServer {
 			System.out.println("WebSocket server started. Press Ctrl+C to stop.");
 
 			// Load the environment objects
-			GraphLoader graphLoader = new GraphLoader();
-			Collection<Node> nodes = new ArrayList<>(graphLoader.loadNeurons());
-			nodes.addAll(graphLoader.loadStomach());
-			nodes.addAll(graphLoader.loadGoals());
+			NodeRegistry nodeRegistry = NodeRegistry.getInstance();
+			Collection<Node> nodes = nodeRegistry.getAllLoadedNodes();
 
 			if (nodes.isEmpty()) {
 				System.out.println("No nodes found");
@@ -30,7 +27,7 @@ public class WebSocketServer {
 			}
 
 			// Simulation of time loop aka Superstep
-			int numberOfSupersteps = (int) (Constants.ONE_SECOND * 60);
+			int numberOfSupersteps = (int) (Constants.ONE_SECOND * 25);
 			long startTime = System.currentTimeMillis();
 			for (int run = 0; run < numberOfSupersteps; run++) {
 				final int currentRun = run;
@@ -49,7 +46,7 @@ public class WebSocketServer {
 
 					SnnWebSocket.broadcast(jsonLikeString);
 				}
-				SnnWebSocket.resetProcessedMessageFlag();
+				SnnWebSocket.resetProcessedMessageFlag(run);
 			}
 			long endTime = System.currentTimeMillis();
 			long elapsedTime = endTime - startTime;

@@ -1,16 +1,18 @@
 package keepmealive;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.neo4j.ogm.annotation.Id;
 import org.neo4j.ogm.annotation.Relationship;
 
+import jakarta.json.JsonArray;
 import keepmealive.relationship.ConnectsTo;
 
-public abstract class Node implements Computable {
+public abstract class Node extends KeyProvider implements Computable {
 
 	@Id
 	protected Long id;
@@ -18,11 +20,11 @@ public abstract class Node implements Computable {
 	@Relationship(type = "ConnectsTo", direction = Relationship.Direction.INCOMING)
 	private List<ConnectsTo> upstreamRelationships = new ArrayList<ConnectsTo>();
 
-	protected LimitedStack<Long> firedSupersteps = new LimitedStack<Long>();
+	private LimitedStack<Long> firedSupersteps = new LimitedStack<Long>();
 
 	public static final int FIRING_THRESHOLD = 1;
 
-	private LimitedStack<Long> getFiredSupersteps() {
+	public LimitedStack<Long> getFiredSupersteps() {
 		return firedSupersteps;
 	}
 
@@ -36,7 +38,7 @@ public abstract class Node implements Computable {
 		if (weightedSum >= FIRING_THRESHOLD) {
 			firedSupersteps.pushItem(timestep);
 		}
-		Map<String, String> result = new ConcurrentHashMap<>();
+		Map<String, String> result = new HashMap<>();
 
 		return result;
 	}
@@ -54,4 +56,21 @@ public abstract class Node implements Computable {
 		}
 		return weightedSum;
 	}
+
+	public static void translateInput(JsonArray jsonArray, Collection<? extends Node> loadedNodes,
+			long currentSuperstep) {
+		throw new UnsupportedOperationException("translateInput method not implemented");
+	}
+
+	public static String getKey() {
+		// Return the class name
+		// Example:
+		// return Node.class.getSimpleName().toLowerCase();
+		throw new UnsupportedOperationException("getKey method not implemented");
+	}
+
+	public Long getId() {
+		return id;
+	}
+
 }

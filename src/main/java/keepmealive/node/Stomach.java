@@ -1,5 +1,6 @@
 package keepmealive.node;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -7,6 +8,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 
+import jakarta.json.JsonArray;
 import keepmealive.Constants;
 import keepmealive.LimitedStack;
 import keepmealive.Node;
@@ -36,52 +38,44 @@ public class Stomach extends Node {
 		switch (type) {
 		case TYPE_OUTPUT_1:
 			if (getCurrentValue(timestep) < 50) {
-				System.out.println("Hungry 1 - Fired");
-				firedSupersteps.pushItem(timestep);
+				getFiredSupersteps().pushItem(timestep);
 			}
 			break;
 		case TYPE_OUTPUT_2:
 			if (getCurrentValue(timestep) < 40) {
-				System.out.println("Hungry 2 - Fired");
-				firedSupersteps.pushItem(timestep);
+				getFiredSupersteps().pushItem(timestep);
 			}
 			break;
 
 		case TYPE_OUTPUT_3:
 			if (getCurrentValue(timestep) < 30) {
-				System.out.println("Hungry 3 - Fired");
-				firedSupersteps.pushItem(timestep);
+				getFiredSupersteps().pushItem(timestep);
 			}
 			break;
 
 		case TYPE_OUTPUT_4:
 			if (getCurrentValue(timestep) < 20) {
-				System.out.println("Hungry 4 - Fired");
-				firedSupersteps.pushItem(timestep);
+				getFiredSupersteps().pushItem(timestep);
 			}
 			break;
 
 		case TYPE_INPUT_1:
 
-			if (firedSupersteps.isEmpty()) {
-				firedSupersteps.pushItem(timestep);
+			if (getFiredSupersteps().isEmpty()) {
+				getFiredSupersteps().pushItem(timestep);
 				int full = 31;
 				percentageFull.pushItem(new TimestepValuePair<Integer>(timestep, full));
 				result.put("Stomach Full", String.valueOf(full));
 			}
-			System.out.println("fullness: " + getLatestValue());
 
 			// Fire every second so that updates only happen once per second
 			if (Utilities.hasPassedRefractoryPeriod(timestep,
-					firedSupersteps.isEmpty() ? 0 : firedSupersteps.getFirst(), REFRACTORY_PERIOD)) {
-				firedSupersteps.pushItem(timestep);
-
-				System.out.println("Inner Stomach node initiated");
+					getFiredSupersteps().isEmpty() ? 0 : getFiredSupersteps().getFirst(), REFRACTORY_PERIOD)) {
+				getFiredSupersteps().pushItem(timestep);
 
 				double weightedSum = super.getFiredUpstreamNeuronWeights(timestep);
 
 				if (weightedSum >= FIRING_THRESHOLD) {
-					System.out.println("Goal - Eating - Received by Stomach");
 					// Add food
 					int newValue = getLatestValue() + 4;
 					percentageFull.pushItem(new TimestepValuePair<Integer>(timestep, newValue));
@@ -90,7 +84,6 @@ public class Stomach extends Node {
 				}
 
 				else {
-					System.out.println("Goal - Eating - Not received by Stomach");
 					// Reduce food
 					int newValue = getLatestValue() - 1;
 					percentageFull.pushItem(new TimestepValuePair<Integer>(timestep, newValue));
@@ -139,5 +132,14 @@ public class Stomach extends Node {
 
 	private int getLatestValue() {
 		return percentageFull.getFirst().getValue();
+	}
+
+	public static void translateInput(JsonArray jsonArray, Collection<? extends Node> loadedNodes) {
+		// TODO
+
+	}
+
+	public static String getKey() {
+		return "stomach";
 	}
 }

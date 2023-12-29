@@ -1,10 +1,12 @@
 package keepmealive.node;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.neo4j.ogm.annotation.NodeEntity;
 
+import jakarta.json.JsonArray;
 import keepmealive.Node;
 
 @NodeEntity
@@ -27,11 +29,8 @@ public class Goal extends Node {
 
 		double weightedSum = super.getFiredUpstreamNeuronWeights(timestep);
 
-		System.out.println("Weighted sum: " + weightedSum);
-
 		if (weightedSum >= FIRING_THRESHOLD) {
-			System.out.println("Goal - Eating - Fired");
-			firedSupersteps.pushItem(timestep);
+			getFiredSupersteps().pushItem(timestep);
 			if (goal != GOAL_EATING) {
 				goal = GOAL_EATING;
 				result.put("Goal", goal);
@@ -44,5 +43,14 @@ public class Goal extends Node {
 		}
 
 		return result;
+	}
+
+	public static String getKey() {
+		return "goal";
+	}
+
+	public static void translateInput(JsonArray jsonArray, Collection<? extends Node> loadedNodes) {
+		// Does nothing
+
 	}
 }

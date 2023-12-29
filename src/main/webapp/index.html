@@ -43,8 +43,8 @@ var scoreText;
 var energyText;
 var goalText;
 
-//Declare FIELD_OF_VISION_RADIUS at the top of your script
-const FIELD_OF_VISION_RADIUS = 200; // Adjust this value based on your game's requirements
+//Declare FIELD_OF_ODOR_RADIUS at the top of your script
+const FIELD_OF_ODOR_RADIUS = 100; // Adjust this value based on your game's requirements
 
 
 var game = new Phaser.Game(config);
@@ -160,15 +160,15 @@ function update ()
     
     updatePlayerMovement();
     
-	// Update the field of vision based on player's position and direction
-    // updateFieldOfVision();
+	// Update the field of odor based on player's position and direction
+    // updateFieldOfOdor();
 
     // Send the information about detected stars to the WebSocket
     sendDetectedStars();
 }
 
 function sendDetectedStars() {
-    // Find stars within the field of vision
+    // Find stars within the field of odor
    /*  const detectedStars = stars.getChildren().filter(star => {
         return Phaser.Geom.Intersects.RectangleToTriangle(star.getBounds(), coneGraphics.pathData);
     }); */
@@ -184,38 +184,60 @@ function sendDetectedStars() {
 	// Simulate sight
     const starsData = getDetectedStars();
     
-    console.log('Detected Stars:', starsData);
+    // console.log('olfactory:', starsData);
 
     // Example: Send detected stars data to the WebSocket
     if (socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ detectedStars: starsData }));
+        socket.send(JSON.stringify({ olfactory: starsData }));
     }
 }
 
 function getDetectedStars() {
     const detectedStars = [];
 
-    // Iterate through stars and check if they are within the player's field of vision
+    // Iterate through stars and check if they are within the player's field of odor
     stars.children.iterate((star) => {
-        const distance = Phaser.Math.Distance.Between(player.x, player.y, star.x, star.y);
-        if (distance < FIELD_OF_VISION_RADIUS) {
-            detectedStars.push({
-                x: star.x,
-                y: star.y,
-                distance: distance,
-                // Add any other relevant visual features
-            });
-        }
+    	if (star.active) {
+        	const distance = Phaser.Math.Distance.Between(player.x, player.y, star.x, star.y);
+        
+     		// Check if the star is within the field of odor radius
+	        if (distance < FIELD_OF_ODOR_RADIUS) {
+	            // Calculate the angle between the player and the star
+	            const angle = Phaser.Math.Angle.Between(player.x, player.y, star.x, star.y);
+	
+	            // Convert the angle to degrees
+	            const angleDegrees = Phaser.Math.RadToDeg(angle);
+	
+	            // Determine the section based on the angle (e.g., divide into 8 sections)
+	            // From the tip of player's head
+	            // 0 - right and below horizon
+	            // 1 - right bottom
+	            // 2 - left  bottom
+	            // 3 - left  and below horizon
+	            // 4 - left above horizon
+	            // 5 - left top
+	            // 6 - right top
+	            // 7 - right above horizon
+	            const section = Math.floor((angleDegrees + 360) % 360 / (360 / 8));
+
+	            // Add star to the detectedStars array with additional information
+	            detectedStars.push({
+	                distance: distance,
+	                section: section,
+	            });
+        	}
+     	}
     });
 
+    
     return detectedStars;
 }
 
-/* function updateFieldOfVision() {
+/* function updateFieldOfOdor() {
     // Clear previous graphics
     coneGraphics.clear();
 
-    // Draw the field of vision cone
+    // Draw the field of odor cone
     coneGraphics.fillStyle(0xff0000, 0.3);
     coneGraphics.slice(player.x, player.y, 200, Phaser.Math.DegToRad(30), -Phaser.Math.DegToRad(30), true);
     coneGraphics.fillPath();
@@ -295,6 +317,7 @@ function createWebSocket() {
 	};
 
 	socket.onmessage = (event) => {
+		// TODO: Make this more efficient so it only gets processed once during each Phaser update cycle
 	  const data = JSON.parse(event.data);
 	  console.log('Received SNN data:', data);
 	  // Update fly position based on received data
