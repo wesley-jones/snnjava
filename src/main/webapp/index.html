@@ -101,7 +101,7 @@ function create ()
         key: 'left',
         frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
         frameRate: 10,
-        repeat: -1
+        repeat: 0
     });
 
     this.anims.create({
@@ -114,11 +114,8 @@ function create ()
         key: 'right',
         frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
         frameRate: 10,
-        repeat: -1
+        repeat: 0
     });
-
-    //  Input Events
-    //cursors = this.input.keyboard.createCursorKeys();
 
     //  Some stars to collect, 12 in total, evenly spaced 70 pixels apart along the x axis
     stars = this.physics.add.group({
@@ -163,9 +160,6 @@ function update ()
     
 	// Process the latest WebSocket message
     processLatestWebSocketMessage();
-    
-	// Movement from keyboard
-    //updatePlayerMovement();
 
     // Send the information about detected stars to the WebSocket
     sendDetectedStars();
@@ -212,18 +206,26 @@ function processLatestWebSocketMessage() {
                     console.warn('Unknown goal:', goal);
                     break;
             }
+        }else
+        {
+            player.setVelocityX(0);
+
+            player.anims.play('turn');
         }
 
         // Reset the latestWebSocketMessage to null after processing
         latestWebSocketMessage = null;
+    }
+    else{
+        player.setVelocityX(0);
+
+        player.anims.play('turn');
     }
 }
 
 function sendDetectedStars() {    
 	// Simulate sight
     const starsData = getDetectedStars();
-    
-    // console.log('olfactory:', starsData);
 
     // Example: Send detected stars data to the WebSocket
     if (socket.readyState === WebSocket.OPEN) {
