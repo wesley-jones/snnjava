@@ -43,6 +43,9 @@ var scoreText;
 var energyText;
 var goalText;
 
+var energyLevel = 10;
+var energyDecrementTimer;
+
 //Declare a variable to store the latest WebSocket message
 let latestWebSocketMessage = null;
 
@@ -52,12 +55,15 @@ const FIELD_OF_ODOR_RADIUS = 100; // Adjust this value based on your game's requ
 
 var game = new Phaser.Game(config);
 
+//Add this at the top of your create function
+var gameOverBanner;
+
 //Initial WebSocket setup
 let socket = createWebSocket();
 
 // Continuously check for an open connection
 setInterval(() => {
-  if (socket.readyState !== WebSocket.OPEN) {
+  if (socket.readyState !== WebSocket.OPEN && !gameOver) {
     console.log('WebSocket connection is closed. Attempting to reconnect...');
     socket = createWebSocket();
   }
@@ -135,9 +141,10 @@ function create ()
 
     //  The score
     goalText = this.add.text(16, 16, 'Goal: --', { fontSize: '32px', fill: '#000' });
-    
-    // Energy
-    energyText = this.add.text(16, 46, 'Stomach Fullness: 100', { fontSize: '32px', fill: '#000' });
+
+	// Energy
+    energyText = this.add.text(16, 46, 'Energy Level:' + energyLevel, { fontSize: '32px', fill: '#000' });
+
 
     //  Collide the player and the stars with the platforms
     this.physics.add.collider(player, platforms);
@@ -149,20 +156,62 @@ function create ()
 
     this.physics.add.collider(player, bombs, hitBomb, null, this);
     
+	// Set up a timer to decrement energy every 1000 milliseconds (1 second)
+    energyDecrementTimer = this.time.addEvent({
+        delay: 1000,
+        callback: decrementEnergy,
+        callbackScope: this,
+        loop: true
+    });
+	
+	// Inside your create function, after setting up other game elements
+    gameOverBanner = this.add.text(400, 0, 'GAME OVER', { fontSize: '120px', fill: '#ff0000' });
+    gameOverBanner.setOrigin(0.5, 0);
+    gameOverBanner.setAlpha(0); // Set initial alpha to 0 (invisible)
+    
 }
 
 function update ()
 {
     if (gameOver)
     {
+    	// Animate the "GAME OVER" banner falling and bouncing
+        this.tweens.add({
+            targets: gameOverBanner,
+            y: 260, // Destination y-coordinate
+            alpha: 1, // Fade in the banner
+            duration: 1000, // Animation duration in milliseconds
+            ease: 'Cubic', // Bounce easing
+            onComplete: () => {
+                // Callback function when the animation completes
+                // You can add additional logic here if needed
+            }
+        });
         return;
     }
     
 	// Process the latest WebSocket message
     processLatestWebSocketMessage();
 
-    // Send the information about detected stars to the WebSocket
-    sendDetectedStars();
+    // Send the information about the simulation to the WebSocket
+    sendSimulationData();
+}
+
+function decrementEnergy() {
+    // Decrement energy level every second
+    energyLevel -= 1;  // Adjust the decrement amount as needed
+
+    // Update energy text
+    energyText.setText('Energy Level: ' + Math.round(energyLevel));
+
+    // Check if energy has reached 0
+    if (energyLevel <= 0) {
+        // Game over
+        gameOver = true;
+        
+        // Stop the energy decrement timer
+        energyDecrementTimer.destroy();
+    }
 }
 
 function processLatestWebSocketMessage() {
@@ -223,12 +272,16 @@ function processLatestWebSocketMessage() {
     }
 }
 
-function sendDetectedStars() {    
+function sendSimulationData() {    
 	// Simulate sight
     const starsData = getDetectedStars();
 
     // Example: Send detected stars data to the WebSocket
     if (socket.readyState === WebSocket.OPEN) {
+    	const message = {
+   			olfactory: starsData,
+   			energyLevel: energyLevel
+        };
         socket.send(JSON.stringify({ olfactory: starsData }));
     }
 }
@@ -274,32 +327,6 @@ function getDetectedStars() {
     return detectedStars;
 }
 
-function updatePlayerMovement() {
-	if (cursors.left.isDown)
-    {
-        player.setVelocityX(-160);
-
-        player.anims.play('left', true);
-    }
-    else if (cursors.right.isDown)
-    {
-        player.setVelocityX(160);
-
-        player.anims.play('right', true);
-    }
-    else
-    {
-        player.setVelocityX(0);
-
-        player.anims.play('turn');
-    }
-
-    if (cursors.up.isDown && player.body.touching.down)
-    {
-        player.setVelocityY(-330);
-    }
-}
-
 function collectStar (player, star)
 {
     star.disableBody(true, true);
@@ -307,6 +334,12 @@ function collectStar (player, star)
     //  Add and update the score
     score += 10;
     // scoreText.setText('Score: ' + score);
+    
+    // Increment energy level
+    energyLevel += 20;  // Adjust the increment amount as needed
+    
+	// Update energy text
+    energyText.setText('Energy Level: ' + energyLevel);
 
     if (stars.countActive(true) === 0)
     {
