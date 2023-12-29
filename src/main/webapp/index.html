@@ -43,6 +43,9 @@ var scoreText;
 var energyText;
 var goalText;
 
+//Declare a variable to store the latest WebSocket message
+let latestWebSocketMessage = null;
+
 //Declare FIELD_OF_ODOR_RADIUS at the top of your script
 const FIELD_OF_ODOR_RADIUS = 100; // Adjust this value based on your game's requirements
 
@@ -115,7 +118,7 @@ function create ()
     });
 
     //  Input Events
-    cursors = this.input.keyboard.createCursorKeys();
+    //cursors = this.input.keyboard.createCursorKeys();
 
     //  Some stars to collect, 12 in total, evenly spaced 70 pixels apart along the x axis
     stars = this.physics.add.group({
@@ -158,29 +161,65 @@ function update ()
         return;
     }
     
-    updatePlayerMovement();
+	// Process the latest WebSocket message
+    processLatestWebSocketMessage();
     
-	// Update the field of odor based on player's position and direction
-    // updateFieldOfOdor();
+	// Movement from keyboard
+    //updatePlayerMovement();
 
     // Send the information about detected stars to the WebSocket
     sendDetectedStars();
 }
 
-function sendDetectedStars() {
-    // Find stars within the field of odor
-   /*  const detectedStars = stars.getChildren().filter(star => {
-        return Phaser.Geom.Intersects.RectangleToTriangle(star.getBounds(), coneGraphics.pathData);
-    }); */
+function processLatestWebSocketMessage() {
+    // Check if there is a new WebSocket message
+    if (latestWebSocketMessage !== null) {
+        const data = JSON.parse(latestWebSocketMessage.data);
+        console.log('Received SNN data:', data);
 
-    // Send the information about detected stars to the WebSocket
-    /* const starsData = detectedStars.map(star => ({
-        x: star.x,
-        y: star.y
-    })); */
-    
-    
-    
+        // Handle different player movement goals
+        if ('Goal' in data) {
+        	console.log("Goal is in data");
+            const goal = data['Goal'];
+
+            switch (goal) {
+                case 'Left':
+                    // Handle left movement
+                    console.log("Go left");
+                    player.setVelocityX(-160);
+                    player.anims.play('left', true);
+                    break;
+
+                case 'Right':
+                    // Handle right movement
+                    console.log("Go Right");
+                    player.setVelocityX(160);
+                    player.anims.play('right', true);
+                    break;
+
+                case 'Up':
+                    // Handle up movement
+                    console.log("Go Up");
+                    if (player.body.touching.down) {
+                        player.setVelocityY(-330);
+                    }
+                    break;
+
+                // Add more cases for additional goals if needed
+
+                default:
+                    // Handle unknown goal
+                    console.warn('Unknown goal:', goal);
+                    break;
+            }
+        }
+
+        // Reset the latestWebSocketMessage to null after processing
+        latestWebSocketMessage = null;
+    }
+}
+
+function sendDetectedStars() {    
 	// Simulate sight
     const starsData = getDetectedStars();
     
@@ -219,7 +258,7 @@ function getDetectedStars() {
 	            // 6 - right top
 	            // 7 - right above horizon
 	            const section = Math.floor((angleDegrees + 360) % 360 / (360 / 8));
-
+				console.log("Section: " + section);
 	            // Add star to the detectedStars array with additional information
 	            detectedStars.push({
 	                distance: distance,
@@ -232,16 +271,6 @@ function getDetectedStars() {
     
     return detectedStars;
 }
-
-/* function updateFieldOfOdor() {
-    // Clear previous graphics
-    coneGraphics.clear();
-
-    // Draw the field of odor cone
-    coneGraphics.fillStyle(0xff0000, 0.3);
-    coneGraphics.slice(player.x, player.y, 200, Phaser.Math.DegToRad(30), -Phaser.Math.DegToRad(30), true);
-    coneGraphics.fillPath();
-} */
 
 function updatePlayerMovement() {
 	if (cursors.left.isDown)
@@ -317,20 +346,9 @@ function createWebSocket() {
 	};
 
 	socket.onmessage = (event) => {
-		// TODO: Make this more efficient so it only gets processed once during each Phaser update cycle
-	  const data = JSON.parse(event.data);
-	  console.log('Received SNN data:', data);
-	  // Update fly position based on received data
-	  
-	  if ('Stomach Full' in data) {
-		  console.log('stomach data received');
-		  energyText.setText('Stomach Fullness: ' + data['Stomach Full']);
-	  }
-	  if ('Goal' in data) {
-		  console.log('Goal data received');
-		  goalText.setText('Goal: ' + data['Goal']);
-	  }
-	};
+        // Update the latestWebSocketMessage with the new message
+        latestWebSocketMessage = event;
+    };
 
 	socket.onclose = (event) => {
 	  console.log('WebSocket connection closed:', event);

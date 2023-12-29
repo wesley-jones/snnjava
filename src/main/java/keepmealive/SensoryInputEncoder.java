@@ -8,7 +8,6 @@ import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
-import jakarta.json.JsonValue;
 
 public class SensoryInputEncoder {
 
@@ -18,33 +17,11 @@ public class SensoryInputEncoder {
 
 		NodeRegistry nodeRegistry = NodeRegistry.getInstance();
 
-		// Access the values in the JsonObject
-		// TODO: Move stomach logic to Javascript
-		if (jsonObject.containsKey("Stomach Full")) {
-			String stomachFullValue = jsonObject.getString("Stomach Full");
-			System.out.println("Stomach Full value: " + stomachFullValue);
-		}
-
-		// Detected Stars
-		if (jsonObject.containsKey("olfactory")) {
-			JsonArray starArray = jsonObject.getJsonArray("olfactory");
-			for (JsonValue starValue : starArray) {
-				// Depending on the structure of your array, you might need to further process
-				// each element
-				String starInfo = starValue.toString();
-				System.out.println("Stars: " + starInfo);
-			}
-		} else {
-			System.out.println("No stars found");
-		}
-
 		for (Class<? extends Node> nodeClass : nodeRegistry.getnodeTypes()) {
 			String key = getKeyForNodeClass(nodeClass);
-			System.out.println("key: " + key);
 
 			if (jsonObject.containsKey(key)) {
 				Collection<? extends Node> loadedNodes = nodeRegistry.getLoadedNodes(nodeClass);
-				System.out.println("Attempting to translate");
 				translateNodeClassMessage(nodeClass, jsonObject.getJsonArray(key), loadedNodes, currentSuperstep);
 			}
 		}

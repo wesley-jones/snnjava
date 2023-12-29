@@ -27,7 +27,7 @@ public class WebSocketServer {
 			}
 
 			// Simulation of time loop aka Superstep
-			int numberOfSupersteps = (int) (Constants.ONE_SECOND * 25);
+			int numberOfSupersteps = (int) (Constants.ONE_SECOND * 60);
 			long startTime = System.currentTimeMillis();
 			for (int run = 0; run < numberOfSupersteps; run++) {
 				final int currentRun = run;
@@ -42,7 +42,7 @@ public class WebSocketServer {
 				if (!resultCollector.isEmpty()) {
 					// Convert Map to JSON-like string
 					String jsonLikeString = Utilities.convertMapToJson(resultCollector);
-					System.out.println(jsonLikeString);
+//					System.out.println(jsonLikeString);
 
 					SnnWebSocket.broadcast(jsonLikeString);
 				}
