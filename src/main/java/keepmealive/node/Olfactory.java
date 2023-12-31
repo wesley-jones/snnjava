@@ -20,23 +20,20 @@ public class Olfactory extends Node {
 
 	public static void translateInput(JsonArray jsonArray, Collection<? extends Node> loadedNodes,
 			long currentSuperstep) {
-		for (JsonValue keyValue : jsonArray) {
-			String starInfo = keyValue.toString();
-			System.out.println("Olfactory Stars: " + starInfo);
-		}
 
 		for (JsonValue jsonValue : jsonArray) {
 			if (jsonValue instanceof JsonObject) {
 				JsonObject jsonObject = (JsonObject) jsonValue;
 				if (jsonObject.containsKey("section")) {
 					int section = jsonObject.getInt("section");
-					// Section is zero based, and 1 based in Neo4j
+					// Section is zero based, but Neo4j is 1 based so add 1
 					String nodeType = TYPE_PREFIX + (section + 1);
 					// Find and update the corresponding node
 					for (Node node : loadedNodes) {
 						if (node instanceof Olfactory && ((Olfactory) node).getType().equals(nodeType)) {
 							// Set a spike for the node
 							node.getFiredSupersteps().pushItem(currentSuperstep);
+							System.out.println("Star detected in section: " + section);
 							break; // Stop searching after finding the matching node
 						}
 					}

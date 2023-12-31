@@ -43,14 +43,14 @@ var scoreText;
 var energyText;
 var goalText;
 
-var energyLevel = 10;
+var energyLevel = 100;
 var energyDecrementTimer;
 
 //Declare a variable to store the latest WebSocket message
 let latestWebSocketMessage = null;
 
 //Declare FIELD_OF_ODOR_RADIUS at the top of your script
-const FIELD_OF_ODOR_RADIUS = 100; // Adjust this value based on your game's requirements
+const FIELD_OF_ODOR_RADIUS = 200; // Adjust this value based on your game's requirements
 
 
 var game = new Phaser.Game(config);
@@ -67,7 +67,7 @@ setInterval(() => {
     console.log('WebSocket connection is closed. Attempting to reconnect...');
     socket = createWebSocket();
   }
-}, 5000); // Adjust the interval as needed (e.g., check every 15 seconds)
+}, 500); // Adjust the interval as needed (e.g., 5000 = 5 seconds)
 
 function preload ()
 {
@@ -272,17 +272,16 @@ function processLatestWebSocketMessage() {
     }
 }
 
-function sendSimulationData() {    
-	// Simulate sight
+function sendSimulationData() {   
+	
     const starsData = getDetectedStars();
 
-    // Example: Send detected stars data to the WebSocket
     if (socket.readyState === WebSocket.OPEN) {
     	const message = {
    			olfactory: starsData,
-   			energyLevel: energyLevel
+   			energyLevel: [energyLevel]
         };
-        socket.send(JSON.stringify({ olfactory: starsData }));
+        socket.send(JSON.stringify(message));
     }
 }
 
@@ -304,14 +303,14 @@ function getDetectedStars() {
 	
 	            // Determine the section based on the angle (e.g., divide into 8 sections)
 	            // From the tip of player's head
-	            // 0 - right and below horizon
+	            // 0 - right and below player's head
 	            // 1 - right bottom
-	            // 2 - left  bottom
-	            // 3 - left  and below horizon
-	            // 4 - left above horizon
+	            // 2 - left bottom
+	            // 3 - left and below player's head
+	            // 4 - left and above player's head
 	            // 5 - left top
 	            // 6 - right top
-	            // 7 - right above horizon
+	            // 7 - right and above player's head
 	            const section = Math.floor((angleDegrees + 360) % 360 / (360 / 8));
 				console.log("Section: " + section);
 	            // Add star to the detectedStars array with additional information

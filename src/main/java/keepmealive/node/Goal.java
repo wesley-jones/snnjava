@@ -24,7 +24,7 @@ public class Goal extends Node {
 		double weightedSum = super.getFiredUpstreamNeuronWeights(timestep);
 
 		if (weightedSum >= FIRING_THRESHOLD) {
-			getFiredSupersteps().pushItem(timestep);
+			// No need to fire neuron since this is an output neuron. Just send a message.
 			String goal = getGoalValueForType(type);
 			result.put("Goal", goal);
 		}
