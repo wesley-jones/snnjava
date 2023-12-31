@@ -1,0 +1,23 @@
+Export Instructions
+-------------------
+- This export will generate the Cypher scripts to build your Neo4j graph database
+- Ensure APOC plugin is installed
+- Add an apoc.conf file in the Neo4j instance conf folder
+- Add this line to apoc.conf:
+	apoc.export.file.enabled=true
+
+- The export file will be generated in the Neo4j instance import folder
+- In Neo4j browser run the following command to generate the export file:
+
+CALL apoc.export.cypher.all("import-scripts.cypher", {
+    format: "plain",
+    useOptimizations: {type: "NONE"}
+})
+YIELD file, batches, source, format, nodes, relationships, properties, time, rows, batchSize
+RETURN file, batches, source, format, nodes, relationships, properties, time, rows, batchSize;
+
+
+Import Instructions
+-------------------
+- Ensure the database is empty before running the scripts
+- To import the Neo4j graph database, copy/paste the import-scripts.cypher into your Neo4j browser and execute the scripts
