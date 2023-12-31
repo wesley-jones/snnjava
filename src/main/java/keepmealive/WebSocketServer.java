@@ -27,7 +27,7 @@ public class WebSocketServer {
 			}
 
 			// Simulation of time loop aka Superstep
-			int numberOfSupersteps = (int) (Constants.ONE_SECOND * 60);
+			int numberOfSupersteps = (int) (Constants.ONE_SECOND * 20000);
 			long startTime = System.currentTimeMillis();
 			for (int run = 0; run < numberOfSupersteps; run++) {
 				final int currentRun = run;
@@ -42,8 +42,7 @@ public class WebSocketServer {
 				if (!resultCollector.isEmpty()) {
 					// Convert Map to JSON-like string
 					String jsonLikeString = Utilities.convertMapToJson(resultCollector);
-//					System.out.println(jsonLikeString);
-
+					System.out.println("outbound: " + jsonLikeString);
 					SnnWebSocket.broadcast(jsonLikeString);
 				}
 				SnnWebSocket.resetProcessedMessageFlag(run);
@@ -51,9 +50,15 @@ public class WebSocketServer {
 			long endTime = System.currentTimeMillis();
 			long elapsedTime = endTime - startTime;
 			double averageIterations = (double) elapsedTime / numberOfSupersteps;
+			int unprocessedMessages = SnnWebSocket.totalIncomingMessageCounter
+					- SnnWebSocket.processedIncomingMessageCounter;
+			double percentageUnprocessed = ((double) unprocessedMessages / SnnWebSocket.totalIncomingMessageCounter)
+					* 100;
 			System.out.println("Average superstep: " + averageIterations + " milliseconds");
 			System.out.println("Total Incoming Messages: " + SnnWebSocket.totalIncomingMessageCounter);
 			System.out.println("Processed Incoming Messages: " + SnnWebSocket.processedIncomingMessageCounter);
+			System.out.println("Ignored Incoming Messages: " + unprocessedMessages);
+			System.out.printf("Percentage of Ignored Messages: %.2f%%\n", percentageUnprocessed);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

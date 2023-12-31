@@ -231,6 +231,7 @@ function processLatestWebSocketMessage() {
                     console.log("Go left");
                     player.setVelocityX(-160);
                     player.anims.play('left', true);
+                    energyLevel -= 0.01;
                     break;
 
                 case 'Right':
@@ -238,6 +239,7 @@ function processLatestWebSocketMessage() {
                     console.log("Go Right");
                     player.setVelocityX(160);
                     player.anims.play('right', true);
+                    energyLevel -= 0.01;
                     break;
 
                 case 'Up':
@@ -245,6 +247,7 @@ function processLatestWebSocketMessage() {
                     console.log("Go Up");
                     if (player.body.touching.down) {
                         player.setVelocityY(-330);
+                        energyLevel -= 0.02;
                     }
                     break;
 
@@ -335,7 +338,10 @@ function collectStar (player, star)
     // scoreText.setText('Score: ' + score);
     
     // Increment energy level
-    energyLevel += 20;  // Adjust the increment amount as needed
+    energyLevel += 5;
+    
+	// Ensure energy level doesn't go above 100
+    energyLevel = Math.min(energyLevel, 100);
     
 	// Update energy text
     energyText.setText('Energy Level: ' + energyLevel);
