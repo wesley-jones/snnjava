@@ -24,6 +24,11 @@ public abstract class Node extends KeyProvider implements Computable {
 
 	public static final int FIRING_THRESHOLD = 1;
 
+	private double voltage;
+
+	// Rate at which voltage decreases over time
+	private static final double DECAY_RATE = 10;
+
 	public LimitedStack<Long> getFiredSupersteps() {
 		return firedSupersteps;
 	}
@@ -34,13 +39,29 @@ public abstract class Node extends KeyProvider implements Computable {
 
 	@Override
 	public Map<String, String> compute(long timestep) {
+
 		double weightedSum = getFiredUpstreamNeuronWeights(timestep);
-		if (weightedSum >= FIRING_THRESHOLD) {
+
+		// Update voltage based on the weighted sum
+		updateVoltage(weightedSum);
+
+		// Check if voltage meets the firing threshold
+		if (voltage >= FIRING_THRESHOLD) {
 			firedSupersteps.pushItem(timestep);
+			voltage = 0;
 		}
+
 		Map<String, String> result = new HashMap<>();
 
 		return result;
+	}
+
+	private void updateVoltage(double weightedSum) {
+		// Decrease voltage over time (decay)
+		voltage = voltage * Math.exp(-DECAY_RATE);
+
+		// Increase voltage based on the weighted sum
+		voltage += weightedSum;
 	}
 
 	protected double getFiredUpstreamNeuronWeights(long timestep) {

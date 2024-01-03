@@ -49,8 +49,8 @@ var energyDecrementTimer;
 //Declare a variable to store the latest WebSocket message
 let latestWebSocketMessage = null;
 
-//Declare FIELD_OF_ODOR_RADIUS at the top of your script
-const FIELD_OF_ODOR_RADIUS = 200; // Adjust this value based on your game's requirements
+//Declare OLFACTORY_RANGE at the top of your script
+const OLFACTORY_RANGE = 200; // Adjust this value based on your game's requirements
 
 
 var game = new Phaser.Game(config);
@@ -291,19 +291,19 @@ function sendSimulationData() {
 function getDetectedStars() {
     const detectedStars = [];
 
-    // Iterate through stars and check if they are within the player's field of odor
+    // Iterate through stars and check if they are within the player's olfactory range
     stars.children.iterate((star) => {
     	if (star.active) {
         	const distance = Phaser.Math.Distance.Between(player.x, player.y, star.x, star.y);
-        
-     		// Check if the star is within the field of odor radius
-	        if (distance < FIELD_OF_ODOR_RADIUS) {
+
+     		// Check if the star is within the olfactory range
+	        if (distance < OLFACTORY_RANGE) {
 	            // Calculate the angle between the player and the star
 	            const angle = Phaser.Math.Angle.Between(player.x, player.y, star.x, star.y);
-	
+
 	            // Convert the angle to degrees
 	            const angleDegrees = Phaser.Math.RadToDeg(angle);
-	
+
 	            // Determine the section based on the angle (e.g., divide into 8 sections)
 	            // From the tip of player's head
 	            // 0 - right and below player's head
@@ -325,7 +325,7 @@ function getDetectedStars() {
      	}
     });
 
-    
+
     return detectedStars;
 }
 

@@ -7,7 +7,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class LimitedStack<T> extends LinkedList<T> {
 	private static final long serialVersionUID = 1L;
-	private static final int MAX_SIZE = 2;
+	private static final int MAX_SIZE = 20;
 
 	private final ReadWriteLock lock = new ReentrantReadWriteLock();
 

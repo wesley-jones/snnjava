@@ -18,6 +18,8 @@ public class Olfactory extends Node {
 
 	private static final String TYPE_PREFIX = "input_";
 
+	private static final double OLFACTORY_RANGE = 200.0;
+
 	public static void translateInput(JsonArray jsonArray, Collection<? extends Node> loadedNodes,
 			long currentSuperstep) {
 
@@ -26,14 +28,26 @@ public class Olfactory extends Node {
 				JsonObject jsonObject = (JsonObject) jsonValue;
 				if (jsonObject.containsKey("section")) {
 					int section = jsonObject.getInt("section");
+					double distance = jsonObject.getJsonNumber("distance").doubleValue();
+
+					// Normalize the distance to be in the range [0, 1]
+					double normalizedDistance = distance / OLFACTORY_RANGE;
+
+					// Calculate the spike count based on the normalized distance
+					int spikeCount = (int) Math.ceil(10 * (1.0 - normalizedDistance));
+
 					// Section is zero based, but Neo4j is 1 based so add 1
 					String nodeType = TYPE_PREFIX + (section + 1);
+
 					// Find and update the corresponding node
 					for (Node node : loadedNodes) {
 						if (node instanceof Olfactory && ((Olfactory) node).getType().equals(nodeType)) {
-							// Set a spike for the node
-							node.getFiredSupersteps().pushItem(currentSuperstep);
-							System.out.println("Star detected in section: " + section);
+
+							// Set spikeCount spikes for the node
+							for (int i = 0; i < spikeCount; i++) {
+								node.getFiredSupersteps().pushItem(currentSuperstep + i);
+							}
+//							System.out.println("Star detected in section: " + section);
 							break; // Stop searching after finding the matching node
 						}
 					}
