@@ -30,7 +30,6 @@ public class Stomach extends Node {
 
 		// Determine the number of nodes to set spikes based on the jsonValue reduction
 		int numNodesToSetSpikes = calculateNodesToSetSpikes(energyLevel, totalNodes);
-		System.out.println("Nodes to spike: " + numNodesToSetSpikes);
 
 		// Iterate through the loadedNodes and set spikes on the selected nodes
 		Iterator<? extends Node> iterator = loadedNodes.iterator();
@@ -39,26 +38,6 @@ public class Stomach extends Node {
 			node.getFiredSupersteps().pushItem(currentSuperstep);
 		}
 	}
-
-//		for (JsonValue jsonValue : jsonArray) {
-//			System.out.println("jsonValue: " + jsonValue);
-//			if (jsonValue instanceof JsonObject) {
-//				JsonObject jsonObject = (JsonObject) jsonValue;
-//				if (jsonObject.containsKey("section")) {
-//					int section = jsonObject.getInt("section");
-//					// Section is zero based, but Neo4j is 1 based so add 1
-//					String nodeType = TYPE_PREFIX + (section + 1);
-//					// Find and update the corresponding node
-//					for (Node node : loadedNodes) {
-//						if (node instanceof Olfactory && ((Olfactory) node).getType().equals(nodeType)) {
-//							// Set a spike for the node
-//							node.getFiredSupersteps().pushItem(currentSuperstep);
-//							break; // Stop searching after finding the matching node
-//						}
-//					}
-//				}
-//			}
-//	}
 
 	private static int calculateNodesToSetSpikes(int jsonValue, int totalNodes) {
 		// Calculate the inverted ratio (1 - ratio)

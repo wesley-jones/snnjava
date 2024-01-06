@@ -45,6 +45,14 @@ public class WebSocketServer {
 					System.out.println("outbound: " + jsonLikeString);
 					SnnWebSocket.broadcast(jsonLikeString);
 				}
+				// Wait until isProcessingMessage is false before moving to the next iteration
+				while (SnnWebSocket.isProcessingMessage()) {
+					try {
+						Thread.sleep(1); // You can adjust the sleep duration based on your needs
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+				}
 				SnnWebSocket.resetProcessedMessageFlag(run);
 			}
 			long endTime = System.currentTimeMillis();
@@ -54,6 +62,7 @@ public class WebSocketServer {
 					- SnnWebSocket.processedIncomingMessageCounter;
 			double percentageUnprocessed = ((double) unprocessedMessages / SnnWebSocket.totalIncomingMessageCounter)
 					* 100;
+
 			System.out.println("Average superstep: " + averageIterations + " milliseconds");
 			System.out.println("Total Incoming Messages: " + SnnWebSocket.totalIncomingMessageCounter);
 			System.out.println("Processed Incoming Messages: " + SnnWebSocket.processedIncomingMessageCounter);
@@ -64,5 +73,6 @@ public class WebSocketServer {
 		} finally {
 			server.stop();
 		}
+
 	}
 }

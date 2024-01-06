@@ -17,6 +17,7 @@ public class SnnWebSocket {
 	private static volatile long currentSuperstep = 0;
 	public static int processedIncomingMessageCounter = 0;
 	public static int totalIncomingMessageCounter = 0;
+	private static volatile boolean isProcessingMessage = false;
 
 	@OnOpen
 	public void onOpen(Session session) {
@@ -34,6 +35,7 @@ public class SnnWebSocket {
 	public void onMessage(String message, Session session) {
 		totalIncomingMessageCounter++;
 		if (!processedMessageInSuperstep) {
+			isProcessingMessage = true;
 			processedIncomingMessageCounter++;
 
 			// Create a copy so that this does not change during the translation
@@ -42,6 +44,7 @@ public class SnnWebSocket {
 
 			// Set the flag to indicate that a message has been processed in this superstep
 			processedMessageInSuperstep = true;
+			isProcessingMessage = false;
 		}
 	}
 
@@ -55,5 +58,9 @@ public class SnnWebSocket {
 	public static void resetProcessedMessageFlag(long newSuperstep) {
 		processedMessageInSuperstep = false;
 		currentSuperstep = newSuperstep + 1;
+	}
+
+	public static boolean isProcessingMessage() {
+		return isProcessingMessage;
 	}
 }

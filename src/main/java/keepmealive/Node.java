@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.neo4j.ogm.annotation.Id;
+import org.neo4j.ogm.annotation.Property;
 import org.neo4j.ogm.annotation.Relationship;
 
 import jakarta.json.JsonArray;
@@ -16,6 +17,9 @@ public abstract class Node extends KeyProvider implements Computable {
 
 	@Id
 	protected Long id;
+
+	@Property
+	private int node_id;
 
 	@Relationship(type = "ConnectsTo", direction = Relationship.Direction.INCOMING)
 	private List<ConnectsTo> upstreamRelationships = new ArrayList<ConnectsTo>();
@@ -27,7 +31,7 @@ public abstract class Node extends KeyProvider implements Computable {
 	private double voltage;
 
 	// Rate at which voltage decreases over time
-	private static final double DECAY_RATE = 10;
+	private static final double DECAY_RATE = .9;
 
 	public LimitedStack<Long> getFiredSupersteps() {
 		return firedSupersteps;
@@ -84,9 +88,6 @@ public abstract class Node extends KeyProvider implements Computable {
 	}
 
 	public static String getKey() {
-		// Return the class name
-		// Example:
-		// return Node.class.getSimpleName().toLowerCase();
 		throw new UnsupportedOperationException("getKey method not implemented");
 	}
 

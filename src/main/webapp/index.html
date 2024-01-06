@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Making your first Phaser 3 Game - Part 10</title>
+<title>Phaser 3 Game - Keep Me Alive</title>
 <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
 <style type="text/css">
 body {
@@ -50,7 +50,8 @@ var energyDecrementTimer;
 let latestWebSocketMessage = null;
 
 //Declare OLFACTORY_RANGE at the top of your script
-const OLFACTORY_RANGE = 200; // Adjust this value based on your game's requirements
+const OLFACTORY_RANGE = 150; // Has to match in Olfactory.java
+var olfactoryRangeGraphics;
 
 
 var game = new Phaser.Game(config);
@@ -164,6 +165,9 @@ function create ()
         loop: true
     });
 	
+	// Add a graphics object for olfactory range
+    olfactoryRangeGraphics = this.add.graphics();
+	
 	// Inside your create function, after setting up other game elements
     gameOverBanner = this.add.text(400, 0, 'GAME OVER', { fontSize: '120px', fill: '#ff0000' });
     gameOverBanner.setOrigin(0.5, 0);
@@ -175,6 +179,9 @@ function update ()
 {
     if (gameOver)
     {
+    	if (socket.readyState === WebSocket.OPEN) {
+            socket.close();
+        }
     	// Animate the "GAME OVER" banner falling and bouncing
         this.tweens.add({
             targets: gameOverBanner,
@@ -192,9 +199,22 @@ function update ()
     
 	// Process the latest WebSocket message
     processLatestWebSocketMessage();
+	
+	// Draw olfactory range circle
+    drawOlfactoryRangeCircle();
 
     // Send the information about the simulation to the WebSocket
     sendSimulationData();
+}
+
+function drawOlfactoryRangeCircle() {
+    olfactoryRangeGraphics.clear(); // Clear previous drawings
+
+    // Draw a circle around the player representing olfactory range
+    olfactoryRangeGraphics.lineStyle(2, 0xff0000); // Line color and thickness
+    olfactoryRangeGraphics.strokeCircle(player.x, player.y, OLFACTORY_RANGE);
+
+    // Adjust the line style and circle properties as needed
 }
 
 function decrementEnergy() {
@@ -316,6 +336,7 @@ function getDetectedStars() {
 	            // 7 - right and above player's head
 	            const section = Math.floor((angleDegrees + 360) % 360 / (360 / 8));
 				console.log("Section: " + section);
+				console.log("Distance: " + distance);
 	            // Add star to the detectedStars array with additional information
 	            detectedStars.push({
 	                distance: distance,
@@ -338,7 +359,7 @@ function collectStar (player, star)
     // scoreText.setText('Score: ' + score);
     
     // Increment energy level
-    energyLevel += 5;
+    energyLevel += 10;
     
 	// Ensure energy level doesn't go above 100
     energyLevel = Math.min(energyLevel, 100);
