@@ -1,4 +1,4 @@
-# KeepMeAlive
+# snnJava
 - Multi-threaded clock-based Spiking Neural Network Framework
 - Phaser Game Simulation with player controlled by the neural network
 - Neural network graph backed by Neo4j
