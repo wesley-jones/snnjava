@@ -4,14 +4,6 @@ import java.util.Map;
 
 public class Utilities {
 
-	// Utility method
-	public static boolean hasPassedRefractoryPeriod(long currentSuperstep, long lastFired, long refractoryPeriod) {
-		boolean result = currentSuperstep - lastFired > refractoryPeriod;
-		return result;
-	}
-
-	// Other utility methods can be added here
-
 	public static String convertMapToJson(Map<String, String> map) {
 		StringBuilder jsonBuilder = new StringBuilder("{");
 

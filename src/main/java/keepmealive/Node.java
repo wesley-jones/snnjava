@@ -44,6 +44,19 @@ public abstract class Node extends KeyProvider implements Computable {
 	@Override
 	public Map<String, String> compute(long timestep) {
 
+		/*
+		 * The advantage of not writing to downstream neurons during each compute is the
+		 * cost to update is greater than reading and you don't have to worry about
+		 * synchronizing your updates across multiple threads which is also costly. This
+		 * approach localizes all changes to this one neuron. All other transactions in
+		 * the compute method are reads. The only down-side is multiple neurons will
+		 * retrieve the same weights from the same neurons within one superstep which is
+		 * duplicative effort.
+		 *
+		 * One final note is that this approach is also most similar to biology where
+		 * the neuron processes all the incoming signals. It does not process the
+		 * outgoing spikes one at a time.
+		 */
 		double weightedSum = getFiredUpstreamNeuronWeights(timestep);
 
 		// Update voltage based on the weighted sum
